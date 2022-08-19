@@ -5,7 +5,7 @@
 import json
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import Flask, render_template, request, Response, flash, redirect, url_for,abort
 from flask_moment import Moment
 from flask_migrate import Migrate
 import logging
@@ -15,6 +15,10 @@ from forms import *
 from datetime import datetime, timezone
 from sqlalchemy import or_, desc
 import sys
+
+from datetime import datetime
+import re
+from operator import itemgetter
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -23,7 +27,7 @@ app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
 
-from models import db, Artist, Venue, Show
+from models import db, Artist, Venue, Show , Genre
 migrate = Migrate(app, db)
 
 
@@ -163,7 +167,6 @@ def create_venue_form():
 @ app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
     form = VenueForm()
-
     name = form.name.data.strip()
     city = form.city.data.strip()
     state = form.state.data
@@ -174,7 +177,7 @@ def create_venue_submission():
     seeking_talent = True if form.seeking_talent.data == 'Yes' else False
     seeking_description = form.seeking_description.data.strip()
     image_link = form.image_link.data.strip()
-    website = form.website.data.strip()
+    website = form.website_link.data.strip()
     facebook_link = form.facebook_link.data.strip()
     
     if not form.validate():
